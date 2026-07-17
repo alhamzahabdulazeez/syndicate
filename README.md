@@ -86,12 +86,15 @@ conversation or agent layer.
 
 ## Requirements
 
-- Python. See `requires-python` in `pyproject.toml`.
+- Python. See `requires-python` in [`pyproject.toml`](pyproject.toml).
 - Docker, for the sandbox container. Mock mode runs without it.
 
 ## Install
 
 ```bash
+git clone https://github.com/alhamzahabdulazeez/syndicate.git
+cd syndicate
+python3 -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
 ```
 
