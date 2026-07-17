@@ -335,7 +335,12 @@ def escalate_node(state: AgentState) -> dict[str, Any]:
 
 # ---------------------------------------------------------------------------
 # Oversight (git half of Node C) — Step 6: local-only commit on validation
-# PASS. Never invoked on the fail path (see _validator_router).
+# PASS. Never invoked on the fail path (see _validator_router). DONE is
+# never taken on the process's word for it -- a commit exit code is the
+# process's claim about itself, not proof. HEAD is checked before and after
+# so a lying/lenient runtime client, a no-op commit ("nothing to commit"),
+# or a rejected hook all fail the same way: no DONE, one strike, routed
+# through the existing retry/escalate budget rather than a new failure path.
 # ---------------------------------------------------------------------------
 
 
@@ -351,6 +356,13 @@ async def oversight_git_node(state: AgentState) -> dict[str, Any]:
         git_log.append(f'$ {command}\nexit={result.exit_code}\n{result.output}')
         return result
 
+    def strike(reason: str) -> dict[str, Any]:
+        git_log.append(f'oversight_git: {reason}')
+        return {
+            'attempt_log': attempt_log + git_log,
+            'strike_count': (state.get('strike_count') or 0) + 1,
+        }
+
     is_repo = await run('git rev-parse --is-inside-work-tree')
     if is_repo.exit_code != 0:
         await run('git init')
@@ -363,18 +375,63 @@ async def oversight_git_node(state: AgentState) -> dict[str, Any]:
     if not files:
         return {'attempt_log': attempt_log + git_log}
 
+    # HEAD before staging -- fails legitimately on a brand-new repo with no
+    # commits yet, in which case DONE below only requires HEAD to resolve.
+    head_before_result = await run('git rev-parse HEAD')
+    head_before = (
+        head_before_result.output.strip() if head_before_result.exit_code == 0 else None
+    )
+
     # Stage only the ticket's explicit paths -- built from a fixed list, never
     # a wildcard, so there is no path-expansion-based staging here.
     paths = ' '.join(shlex.quote(f) for f in files)
-    await run(f'git add -- {paths}')
+    add_result = await run(f'git add -- {paths}')
+    if add_result.exit_code != 0:
+        return strike('git add failed; nothing staged, no commit attempted')
 
     intent = ticket.get('intent') or ticket.get('title') or 'update'
     ticket_id = ticket.get('id') or ticket.get('ticket_id') or 'TICKET'
     body = '; '.join(attempt_log) if attempt_log else 'no attempts'
     message = f'[{ticket_id}] {intent}\n\n{body}'
-    await run(f'git commit -m {shlex.quote(message)}')
+    commit_result = await run(f'git commit -m {shlex.quote(message)}')
+    if commit_result.exit_code != 0:
+        return strike(
+            f'git commit failed (exit={commit_result.exit_code}); declared '
+            f'files_changed={files!r} produced no commit'
+        )
+
+    # Don't trust the commit's own exit code -- ask git whether a commit
+    # actually landed. A ticket that declared files_changed but produced no
+    # real diff (or a runtime client that reports success without acting)
+    # is failure mode 3 one layer up: a claimed edit that never happened.
+    head_after_result = await run('git rev-parse HEAD')
+    head_after = (
+        head_after_result.output.strip() if head_after_result.exit_code == 0 else None
+    )
+    if head_after is None or head_after == head_before:
+        return strike(
+            f'git commit exited 0 but HEAD did not move (before={head_before!r}, '
+            f'after={head_after!r}); declared files_changed={files!r} showed no changes'
+        )
 
     return {'attempt_log': attempt_log + git_log, 'ticket_status': TicketStatus.DONE}
+
+
+def _oversight_git_router(state: AgentState) -> str:
+    if state.get('ticket_status') == TicketStatus.DONE:
+        return 'advance'
+    # A ticket that never declared files to change made no commit attempt at
+    # all (see the early return in oversight_git_node) -- that's a no-op,
+    # not a failed attempt, and isn't retried. Only a ticket that declared
+    # files and then failed to produce a verified commit takes the
+    # retry/escalate path below.
+    ticket = state.get('active_ticket') or {}
+    files = ticket.get('files_changed') or ticket.get('target_files') or []
+    if not files:
+        return 'advance'
+    if (state.get('strike_count') or 0) >= _MAX_STRIKES:
+        return 'escalate'
+    return 'executor'
 
 
 # ---------------------------------------------------------------------------
@@ -437,7 +494,11 @@ def build_graph(checkpointer: Checkpointer = None) -> CompiledStateGraph:
             'escalate': 'escalate',
         },
     )
-    builder.add_edge('oversight_git', 'advance')
+    builder.add_conditional_edges(
+        'oversight_git',
+        _oversight_git_router,
+        {'advance': 'advance', 'executor': 'executor', 'escalate': 'escalate'},
+    )
     builder.add_edge('escalate', 'advance')
     builder.add_edge('advance', 'dispatch')
 
