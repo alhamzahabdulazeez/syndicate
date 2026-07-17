@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Syndicate Monitor</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header id="app-header">
+  <div class="header-left">
+    <span class="brand">Syndicate</span>
+    <select id="run-selector" aria-label="Select run"></select>
+  </div>
+  <div class="header-right">
+    <span id="status-pill" class="pill pill-idle">idle</span>
+    <span id="run-id-label" class="run-id"></span>
+  </div>
+</header>
+
+<main id="app-main">
+  <section id="pane-left" class="pane">
+    <h2 class="pane-title">Timeline</h2>
+    <div id="timeline" class="timeline"></div>
+  </section>
+
+  <div id="divider" class="divider" role="separator" aria-orientation="vertical"></div>
+
+  <section id="pane-right" class="pane">
+    <div class="tabs" role="tablist">
+      <button class="tab-btn active" data-tab="state" role="tab" aria-selected="true">State</button>
+      <button class="tab-btn" data-tab="ledger" role="tab" aria-selected="false">Ledger</button>
+      <button class="tab-btn" data-tab="raw" role="tab" aria-selected="false">Raw</button>
+    </div>
+    <div id="tab-state" class="tab-panel active"></div>
+    <div id="tab-ledger" class="tab-panel"></div>
+    <div id="tab-raw" class="tab-panel"><pre id="raw-log" class="raw-log"></pre></div>
+  </section>
+</main>
+
+<footer id="app-footer">
+  <div id="prompt-notice" class="prompt-notice" hidden></div>
+  <form id="prompt-form">
+    <textarea id="prompt-input" placeholder="Describe the ticket for Syndicate to work on..." rows="2"></textarea>
+    <button id="submit-btn" type="submit">Submit</button>
+  </form>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

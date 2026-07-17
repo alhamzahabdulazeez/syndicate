@@ -1,0 +1,45 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Unit test / coverage reports
+.coverage
+.coverage.*
+.pytest_cache/
+htmlcov/
+coverage.xml
+
+# mypy / ruff
+.mypy_cache/
+.ruff_cache/
+.dmypy.json
+dmypy.json
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Editors
+.idea/
+.vscode/**/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+*~
+.DS_Store
+
+# Syndicate server: SQLite checkpointer runs (server/app.py)
+/data/
+
+# Workspace mounted into the runtime container (scripts/run_runtime_container.sh)
+/workspace
