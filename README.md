@@ -95,6 +95,9 @@ conversation or agent layer.
 pip install -e ".[dev]"
 ```
 
+The `[dev]` extra pulls in pytest, mypy, and ruff — needed to run the
+Verification checks below, including the test suite.
+
 ## Quickstart
 
 ### Mock mode
@@ -135,25 +138,33 @@ The server binds `127.0.0.1:8080` only. See
 Check the claims above against a clone:
 
 ```bash
-ruff check syndicate server scripts
-mypy syndicate server scripts --ignore-missing-imports
-SYNDICATE_MOCK_CLIENT=1 python3 scripts/smoke_e2e_mock.py
+ruff check syndicate/ server/ scripts/ tests/
+mypy syndicate/ server/
+pytest
+python3 scripts/smoke_e2e_mock.py
+python3 scripts/verify_runtime_echo.py      # requires a live container
+python3 scripts/verify_runtime_fileops.py   # requires a live container
 ```
 
 ## Status
 
-Syndicate has no unit test suite. Correctness is verified through
-integration scripts under scripts/. A pytest suite is planned.
+Syndicate has a 29-test pytest suite (`tests/`) covering decision-ledger
+compression, the run-wide escalation budget, retry bounds, the
+oversight_git commit-verification fix and its router, and `RuntimeClient`
+protocol conformance across the mock and OpenHands adapters. It runs
+entirely against the mock runtime. The integration scripts under
+`scripts/` are the layer that exercises a live container end to end —
+the unit suite doesn't replace that.
 
-Syndicate is ~1,473 lines across `syndicate/` and `server/`. It is an
+Syndicate is ~1,601 lines across `syndicate/` and `server/`. It is an
 orchestration layer, and it makes no claim to being a full agent
 framework.
 
 There are no published SWE-bench Verified numbers yet. The benchmark is a
 goal here, not a claim.
 
-Remaining roadmap: a real pytest suite, dual-sandbox egress enforcement,
-and a real end-to-end issue-resolution run measured against a benchmark.
+Remaining roadmap: dual-sandbox egress enforcement, and a real
+end-to-end issue-resolution run measured against a benchmark.
 
 ## License
 
