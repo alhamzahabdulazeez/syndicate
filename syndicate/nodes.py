@@ -25,9 +25,9 @@ from syndicate.state import (
 
 _DUMMY_ACTIONS = ['git status', 'python -m pytest']
 # Model used by analyzer when making real LLM-assisted runs (not invoked in mock mode).
-_ANALYZER_MODEL = 'claude-5-sonnet-latest'
+_ANALYZER_MODEL = 'claude-sonnet-4-6'
 # Model used by architect when making real LLM-assisted runs (not invoked in mock mode).
-_ARCHITECT_MODEL = 'claude-5-sonnet-latest'
+_ARCHITECT_MODEL = 'claude-sonnet-4-6'
 # Model used by executor when making real LLM-assisted runs (not invoked in mock mode).
 _EXECUTOR_MODEL = 'claude-sonnet-4-6'
 

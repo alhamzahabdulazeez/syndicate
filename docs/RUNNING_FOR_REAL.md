@@ -36,10 +36,9 @@ no run has confirmed them yet.
 
 ## What you need
 
-- `ANTHROPIC_API_KEY` for a real Anthropic account. The executor calls
-  `claude-sonnet-4-6`; analyzer and architect call `claude-5-sonnet-latest`
-  (see `_EXECUTOR_MODEL` / `_ANALYZER_MODEL` / `_ARCHITECT_MODEL` in
-  `syndicate/nodes.py`).
+- `ANTHROPIC_API_KEY` for a real Anthropic account. Executor, analyzer, and
+  architect all call `claude-sonnet-4-6` (see `_EXECUTOR_MODEL` /
+  `_ANALYZER_MODEL` / `_ARCHITECT_MODEL` in `syndicate/nodes.py`).
 - Docker, to run the `agent-server` sandbox
   (`scripts/run_runtime_container.sh`; see the main
   [README](../README.md#quickstart) for the workspace-ownership fix it

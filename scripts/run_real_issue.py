@@ -69,7 +69,7 @@ def main() -> None:
     body = args.body if args.body is not None else Path(args.body_file).read_text()
 
     from syndicate.nodes import build_graph
-    from syndicate.state import AgentState, GithubIssue
+    from syndicate.state import AgentState, GithubIssue, TicketStatus
 
     issue: GithubIssue = {
         'repo': args.repo,
@@ -95,8 +95,7 @@ def main() -> None:
     for decision in final_state.get('decision_ledger') or []:
         print(f'  decision: {decision.summary}')
 
-    ticket_status = str(final_state.get('ticket_status'))
-    sys.exit(0 if 'done' in ticket_status.lower() else 1)
+    sys.exit(0 if final_state.get('ticket_status') == TicketStatus.DONE else 1)
 
 
 if __name__ == '__main__':
