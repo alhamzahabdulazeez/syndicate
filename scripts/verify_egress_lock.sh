@@ -53,6 +53,21 @@ else
     fail "host -> https://$PUBLIC_HOST NOT reachable -- egress rules leaked into host's own OUTPUT path"
 fi
 
+# Known gap, not covered above: an "Invariant 5" for intra-subnet allow
+# (container A -> container B on the sandbox network still works under the
+# lock) is untested. lock_egress.sh's rule 2 (-s $SUBNET -d $SUBNET -j
+# RETURN) exists to permit this, but with a single container on the network
+# there is nothing else on the subnet to verify it against. Would need a
+# second container on syndicate-sandbox-net to actually exercise this path.
+#
+# Also known and unaddressed: the DROP in lock_egress.sh is unconditional
+# past the intra-subnet/established carve-outs -- there is no allowlist.
+# Under the lock, a ticket cannot pip install, git clone, or npm install
+# from inside the sandbox. No hook for exceptions exists anywhere in
+# lock_egress.sh/unlock_egress.sh. Not solved here; flagging so it's a
+# known constraint on any Step 8 work that needs dependency resolution
+# inside the sandbox, not a rediscovered one.
+
 echo
 echo "=== DOCKER-USER chain (for the record) ==="
 IPTABLES_SUDO=""

@@ -136,6 +136,25 @@ SYNDICATE_RUNTIME_URL=http://localhost SYNDICATE_RUNTIME_PORT=8000 python3 -m se
 The server binds `127.0.0.1:8080` only. See
 [`server/README.md`](server/README.md) for the API surface.
 
+### Sandbox network isolation
+
+The container starts with unrestricted outbound access. `scripts/lock_egress.sh`
+installs DOCKER-USER rules that drop outbound traffic from the sandbox subnet,
+while leaving intra-subnet traffic, established connections, the published port,
+and the host's own network alone. `scripts/unlock_egress.sh` reverses it, and
+both are idempotent.
+
+`scripts/verify_egress_lock.sh` checks four invariants against a live container:
+outbound from the sandbox fails, host ingress on the published port still
+works, established return traffic still flows, and the host's own egress is
+untouched.
+
+An operator runs these. The graph does not enforce them. Two constraints are
+recorded in `verify_egress_lock.sh`: there is no allowlist, so a ticket under
+the lock cannot `pip install`, `git clone`, or `npm install` from inside the
+sandbox; and the intra-subnet path is permitted by rule but has no behavioral
+test, since exercising it needs a second container on the network.
+
 ## Verification
 
 Check the claims above against a clone:
@@ -166,8 +185,8 @@ framework.
 There are no published SWE-bench Verified numbers yet. The benchmark is a
 goal here, not a claim.
 
-Remaining roadmap: dual-sandbox egress enforcement, and a real
-end-to-end issue-resolution run measured against a benchmark.
+Remaining roadmap: a real end-to-end issue-resolution run measured against
+a benchmark.
 
 ## License
 
