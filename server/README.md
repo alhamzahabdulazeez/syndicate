@@ -4,6 +4,20 @@ A minimal FastAPI service wrapping the frozen `syndicate/` LangGraph chassis:
 submit a `raw_request`, persist runs in SQLite, stream execution as SSE into
 a live timeline, inspect state in a workspace pane.
 
+## This is a lower-level entry point, not the issue-resolution pipeline
+
+`POST /runs` takes a free-text `raw_request` and seeds `active_ticket`
+directly (`server/runner.py::build_initial_state`). It bypasses
+`analyzer_node`/`architect_node` entirely -- no issue triage, no
+repo-grounded `verification_command` derivation, just `raw_request` handed
+straight to the executor as the ticket's task.
+
+For running Syndicate against a real GitHub issue -- the
+analyzer→architect→executor→validator→oversight_git pipeline that derives
+its own ticket from the issue and repo -- use `scripts/run_real_issue.py`
+instead, documented in [`docs/RUNNING_FOR_REAL.md`](../docs/RUNNING_FOR_REAL.md).
+That is a separate entry path; this server does not go through it.
+
 ## Running
 
 ```bash

@@ -28,6 +28,9 @@ _UI_WORKSPACE_ROOT = '/home/openhands/syndicate-workspace/ui-runs'
 
 
 def build_initial_state(run_id: str, raw_request: str) -> dict[str, Any]:
+    # TODO: bypasses analyzer/architect entirely -- see "This is a
+    # lower-level entry point" in server/README.md before assuming this
+    # derives a ticket the way scripts/run_real_issue.py does.
     return {
         'active_ticket': {
             'id': run_id,

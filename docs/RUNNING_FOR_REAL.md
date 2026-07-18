@@ -6,6 +6,12 @@ fix. No run following this document has happened yet. Nothing below is a
 benchmark or a claim of success; it's the procedure, written so the first
 real run is reproducible rather than ad hoc.
 
+This is one of two entry paths into Syndicate. The other is the FastAPI
+server ([`server/README.md`](../server/README.md)), which takes a
+free-text `raw_request` and seeds a ticket directly, bypassing
+analyzer/architect entirely. Use this document's path — not the server —
+when the goal is resolving a real GitHub issue through the full pipeline.
+
 ## Hardware
 
 The development VPS this repo has been verified against has 1 CPU core and
