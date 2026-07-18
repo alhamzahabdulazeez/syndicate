@@ -26,7 +26,27 @@ class DecisionSummary:
     attempt_count: int
 
 
+class GithubIssue(TypedDict, total=False):
+    """Analyzer's input contract (see syndicate.nodes.analyzer_node): a real
+    GitHub issue plus the repo it belongs to. `workspace_dir` points at an
+    already-cloned checkout -- fetching the issue and cloning the repo are
+    both out of scope here, this is the shape the analyzer consumes once
+    that data exists."""
+
+    repo: str  # "owner/name"
+    number: int
+    title: str
+    body: str
+    workspace_dir: str
+
+
 class AgentState(TypedDict, total=False):
+    # Real GitHub issue driving this run; when absent, analyzer/architect
+    # fall back to the pre-existing stub-ticket behavior untouched.
+    issue: GithubIssue
+    # Analyzer's structured read of `issue`, consumed by architect_node to
+    # build `active_ticket`.
+    issue_analysis: dict[str, Any]
     active_ticket: dict[str, Any]
     attempt_log: list[str]
     decision_ledger: list[DecisionSummary]
