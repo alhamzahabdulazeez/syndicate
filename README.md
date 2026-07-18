@@ -170,23 +170,34 @@ python3 scripts/verify_runtime_fileops.py   # requires a live container
 
 ## Status
 
-Syndicate has a 29-test pytest suite (`tests/`) covering decision-ledger
+Syndicate has a 35-test pytest suite (`tests/`) covering decision-ledger
 compression, the run-wide escalation budget, retry bounds, the
-oversight_git commit-verification fix and its router, and `RuntimeClient`
-protocol conformance across the mock and OpenHands adapters. It runs
-entirely against the mock runtime. The integration scripts under
-`scripts/` are the layer that exercises a live container end to end —
-the unit suite doesn't replace that.
+oversight_git commit-verification fix and its router, `RuntimeClient`
+protocol conformance across the mock and OpenHands adapters, and the
+analyzer/architect pipeline that turns a real GitHub issue into the ticket
+shape the executor consumes. It runs entirely against the mock runtime and
+a scripted LLM. The integration scripts under `scripts/` are the layer
+that exercises a live container end to end — the unit suite doesn't
+replace that.
 
-Syndicate is ~1,601 lines across `syndicate/` and `server/`. It is an
+The full pipeline (analyzer, architect, executor, validator, oversight_git)
+is real-path complete: given a real GitHub issue and an Anthropic key,
+every node does the real thing instead of short-circuiting to a stub, and
+architect derives `verification_command` from the target repo's own
+checkout rather than a fixed default. `scripts/run_real_issue.py` is the
+entry point, and [`docs/RUNNING_FOR_REAL.md`](docs/RUNNING_FOR_REAL.md)
+documents how to run it. No one has run it yet — this repository verifies
+wiring in mock mode and stops there; a real run needs hardware beyond the
+VPS this was developed on.
+
+Syndicate is ~1,784 lines across `syndicate/` and `server/`. It is an
 orchestration layer, and it makes no claim to being a full agent
 framework.
 
-There are no published SWE-bench Verified numbers yet. The benchmark is a
-goal here, not a claim.
+There are no published SWE-bench Verified numbers, and none are claimed.
 
-Remaining roadmap: a real end-to-end issue-resolution run measured against
-a benchmark.
+Remaining roadmap: one real end-to-end issue-resolution run, on adequate
+hardware, following `docs/RUNNING_FOR_REAL.md`.
 
 ## License
 
